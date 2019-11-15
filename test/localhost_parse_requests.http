@@ -1,0 +1,11 @@
+### ADDRESS: one address
+GET http://localhost:8000/address/4301 NE 72nd Ave W
+
+### ADDRESS: multiple addresses
+GET http://localhost:8000/address/4301 NE 72nd Ave W, 123 Main Street
+
+### NAME: multiple names
+GET http://localhost:8000/name/John and Mari and Jorge C Calientes
+Accept: application/json
+
+###
