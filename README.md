@@ -22,7 +22,7 @@ For your convenience, or to deploy it alongside other services, you can use [Doc
 docker-compose up
 
 # debug
-SP_DEBUG=yes docker-compose up
+DEBUG=yes docker-compose up
 ```
 
 ### Use
