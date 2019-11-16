@@ -27,14 +27,22 @@ async def root():
 
 @app.get("/address/{addr}", response_model=address.Address)
 async def addr_parse(addr: str):
-    parsed = address.multiparse(addr)
-    return parsed
+    try:
+        parsed = address.multiparse(addr)
+        return parsed
+    except Exception as e:
+        logger.exception("failed to parse address")
+        raise e
 
 
 @app.get("/name/{fullname}", response_model=name.NameResponse)
 async def name_parse(fullname: str):
-    parsed = name.run_parse(fullname)
-    return parsed
+    try:
+        parsed = name.run_parse(fullname)
+        return parsed
+    except Exception as e:
+        logger.error("failed to parse name")
+        raise e
 
 
 if __name__ == "__main__":

@@ -1,9 +1,10 @@
 # Ivy Parsing API
 
-This is an API wrapper around two of Datamade's parsing packages:
+This is an API wrapper around two of Datamade's parsing packages, and Libpostal:
  
 * [probablepeople](https://github.com/datamade/probablepeople)
 * [usaddress](https://github.com/datamade/usaddress)
+* [libpostal](https://github.com/openvenues/libpostal)
 
 It's built on [FastAPI](https://fastapi.tiangolo.com) - a modern, fast (high-performance), web framework.
 

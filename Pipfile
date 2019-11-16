@@ -15,6 +15,7 @@ pyyaml = "*"
 ujson = "*"
 usaddress = "*"
 uvicorn = "*"
+postal = "*"
 
 [requires]
 python_version = "3.7"
