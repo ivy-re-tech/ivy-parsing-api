@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: ivy-parser
-          image: us.gcr.io/ivy-re-data/ivy-parser:0.0.1
+          image: us.gcr.io/ivy-re-data/ivy-parser:$VERSION
           ports:
             - containerPort: 8000
 ---
