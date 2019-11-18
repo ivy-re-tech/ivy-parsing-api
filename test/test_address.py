@@ -1,3 +1,4 @@
+import json
 from unittest import TestCase
 
 from address import multiparse
@@ -61,28 +62,20 @@ class MultiParseTests(TestCase):
         self.assertIsNone(output["street_name_pre_directional"])
         self.assertIsNone(output["street_name_pre_type"])
 
-    def test_multi_cases(self):
-        """test cases where tag fails for multiple addresses"""
-        case = "4301 NE 72nd Ave W, 123 Main Street"
+    def test_po_box(self):
+        """test that a PO Box returns proper info"""
+        case = "po box 23984, phoenix az"
         output = multiparse(case)
-        self.assertEqual(output["input_type"], "Ambiguous")
-        self.assertEqual(output["address_number"], "4301")
-        self.assertEqual(output["street_name_pre_directional"], "NE")
-        self.assertEqual(output["street_name"], "72nd")
-        self.assertEqual(output["street_name_post_type"], "Ave")
-        self.assertEqual(output["street_name_post_directional"], "W")
-        self.assertIsNone(output["address_number_suffix"])
-        self.assertIsNone(output["street_name_pre_modifier"])
-        self.assertIsNone(output["street_name_pre_type"])
+        self.assertEqual(output["input_type"], "Po Box")
+        self.assertEqual(output["usps_box_type"], "Po Box")
+        self.assertEqual(output["usps_box_id"], "23984")
+        self.assertEqual(output["place_name"], "Phoenix")
+        self.assertEqual(output["state_name"], "AZ")
 
-        case = "123 Main Street, 155 NE Main St SW"
+    def test_full_obj(self):
+        """check that a full returned object matches our expectations"""
+        case = "123 E Main Vine St NE Apt C Gig Harbor WA 98406"
         output = multiparse(case)
-        self.assertEqual(output["input_type"], "Ambiguous")
-        self.assertEqual(output["address_number"], "123")
-        self.assertEqual(output["street_name"], "Main")
-        self.assertEqual(output["street_name_post_type"], "Street")
-        self.assertIsNone(output["address_number_prefix"])
-        self.assertIsNone(output["address_number_suffix"])
-        self.assertIsNone(output["street_name_pre_modifier"])
-        self.assertIsNone(output["street_name_pre_type"])
-        self.assertIsNone(output["street_name_post_directional"])
+        with open("full_object.json") as f:
+            sample = json.load(f)
+        self.assertEqual(output, sample)

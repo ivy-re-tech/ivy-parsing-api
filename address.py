@@ -1,12 +1,14 @@
-import re
-from postal.parser import parse_address
 import logging
+import re
+from string import capwords
 from typing import List, Tuple
 
+import postal.parser as libpostal
 from pydantic import BaseModel
-from usaddress import parse, tag, RepeatedLabelError, LABELS
+from usaddress import parse, tag, RepeatedLabelError, LABELS, STREET_NAMES
 
 logger = logging.getLogger("App")
+
 first_cap_re = re.compile("(.)([A-Z][a-z]+)")
 all_cap_re = re.compile("([a-z0-9])([A-Z])")
 
@@ -18,12 +20,8 @@ def convert(name):
 
 # relevant usaddress tags:
 tag_map = {convert(label): label for label in LABELS}
-
-libpostal_tag_map = {
-    "postcode": "zip_code",
-    "state": "state_name",
-    "city": "place_name"
-}
+# libpostal_tag_map: map of libpostal tags to usaddress tags
+ltm = {"postcode": "zip_code", "state": "state_name", "city": "place_name"}
 
 
 class Address(BaseModel):
@@ -84,6 +82,7 @@ class Address(BaseModel):
             self.intersection_separator,
             self.recipient,
             self.not_address,
+            self.street_address,
         ]
 
     @property
@@ -116,34 +115,50 @@ def get_from_tags(parsed: List[Tuple[str, str]]) -> dict:
     return base
 
 
-def clean_string(any_str: str):
+def _clean_string(any_str: str):
     """remove commas and periods and other unwanted characters"""
-    if not isinstance(any_str, str):
-        return any_str
     unwanted = ",."
     for c in unwanted:
-        return re.sub(c, "", any_str)
+        re.sub(c, "", any_str)
+    return any_str
+
+
+def _case_string(any_str: str):
+    """apply casing based on some simple rules"""
+    if len(any_str) <= 2 and any_str.lower() not in STREET_NAMES:
+        return any_str.upper()
+    return capwords(any_str)
+
+
+def clean_format(any_str: str):
+    if not isinstance(any_str, str):
+        return any_str
+    clean = _clean_string(any_str)
+    cased = _case_string(clean)
+    return cased
 
 
 def multiparse(address: str) -> dict:
     """return a StreetAddress-compatible dictionary from either tag or parse"""
     base = dict(Address())
-    parsed = {el[1]: el[0] for el in parse_address(address)}
-    logger.info(parsed)
-    street = format_street(parsed)
+    lp_tagged = {elmt[1]: elmt[0] for elmt in libpostal.parse_address(address)}
+    logger.info(lp_tagged)
+    street = format_street(lp_tagged)
 
     try:
         out, input_type = tag(street)
     except RepeatedLabelError as e:
         parsed = parse(street)
+        # `out` will be the first address only in a multiple address scenario
         out = get_from_tags(parsed)
         input_type = "Ambiguous"
 
-    base.update({"input_type": input_type})
-    base.update({"street_address": street})
+    base.update({"input_type": input_type, "street_address": street})
+    # add the tags from usaddress to the output file
     base.update({k: out.get(v) for k, v in tag_map.items()})
-    base.update({libpostal_tag_map.get(k, ""): v for k, v in parsed.items() if len(libpostal_tag_map.get(k, "")) > 0})
-    return {k: clean_string(v) for k, v in base.items()}
+    # use libpostal-parsed values over usaddress
+    base.update({ltm.get(k): v for k, v in lp_tagged.items() if k in ltm})
+    return {k: clean_format(v) for k, v in base.items()}
 
 
 def get_street_tags() -> List[str]:
@@ -151,9 +166,34 @@ def get_street_tags() -> List[str]:
     return ["house_number", "po_box", "road", "unit"]
 
 
-def format_street(components: dict) -> str:
+def format_street(tagged: dict) -> str:
     """Builds a street address from the parsed components from libpostal
     Supports P.O. Boxes as well as normal street addresses
     """
-    return " ".join([components.get(el, "").title() for el in get_street_tags() if len(components.get(el, "")) > 0])
+    formatted = " ".join(
+        [tagged.get(elmt) for elmt in get_street_tags() if elmt and elmt in tagged]
+    )
+    return formatted
 
+
+class LibpostalResponse(BaseModel):
+    house: str = None
+    category: str = None
+    near: str = None
+    house_number: str = None
+    road: str = None
+    unit: str = None
+    level: str = None
+    staircase: str = None
+    entrance: str = None
+    po_box: str = None
+    postcode: str = None
+    suburb: str = None
+    city_district: str = None
+    city: str = None
+    island: str = None
+    state_district: str = None
+    state: str = None
+    country_region: str = None
+    country: str = None
+    world_region: str = None
