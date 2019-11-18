@@ -1,9 +1,12 @@
 import re
+from postal.parser import parse_address
+import logging
 from typing import List, Tuple
 
 from pydantic import BaseModel
 from usaddress import parse, tag, RepeatedLabelError, LABELS
 
+logger = logging.getLogger("App")
 first_cap_re = re.compile("(.)([A-Z][a-z]+)")
 all_cap_re = re.compile("([a-z0-9])([A-Z])")
 
@@ -15,6 +18,12 @@ def convert(name):
 
 # relevant usaddress tags:
 tag_map = {convert(label): label for label in LABELS}
+
+libpostal_tag_map = {
+    "postcode": "zip_code",
+    "state": "state_name",
+    "city": "place_name"
+}
 
 
 class Address(BaseModel):
@@ -44,6 +53,7 @@ class Address(BaseModel):
     intersection_separator: str = None
     recipient: str = None
     not_address: str = None
+    street_address: str = None
 
     @property
     def _all(self) -> List[str]:
@@ -115,9 +125,12 @@ def clean_string(any_str: str):
         return re.sub(c, "", any_str)
 
 
-def multiparse(street: str) -> dict:
+def multiparse(address: str) -> dict:
     """return a StreetAddress-compatible dictionary from either tag or parse"""
     base = dict(Address())
+    parsed = {el[1]: el[0] for el in parse_address(address)}
+    logger.info(parsed)
+    street = format_street(parsed)
 
     try:
         out, input_type = tag(street)
@@ -127,5 +140,20 @@ def multiparse(street: str) -> dict:
         input_type = "Ambiguous"
 
     base.update({"input_type": input_type})
+    base.update({"street_address": street})
     base.update({k: out.get(v) for k, v in tag_map.items()})
+    base.update({libpostal_tag_map.get(k, ""): v for k, v in parsed.items() if len(libpostal_tag_map.get(k, "")) > 0})
     return {k: clean_string(v) for k, v in base.items()}
+
+
+def get_street_tags() -> List[str]:
+    """These are the libpostal tags we're interested in"""
+    return ["house_number", "po_box", "road", "unit"]
+
+
+def format_street(components: dict) -> str:
+    """Builds a street address from the parsed components from libpostal
+    Supports P.O. Boxes as well as normal street addresses
+    """
+    return " ".join([components.get(el, "").title() for el in get_street_tags() if len(components.get(el, "")) > 0])
+
