@@ -1,8 +1,11 @@
-### ADDRESS: one address
+### ADDRESS: one street-only address
 GET http://localhost:8000/address/4301 NE 72nd Ave W
 
-### ADDRESS: multiple addresses
-GET http://localhost:8000/address/4301 NE 72nd Ave W, 123 Main Street
+### ADDRESS: one full address
+GET http://localhost:8000/address/123 E Main Vine St NE Apt C Gig Harbor WA 98406
+
+### ADDRESS: one full address w/ only libpostal
+GET http://localhost:8000/address/libpostal/123 E Main Vine St NE Apt C Gig Harbor WA 98406
 
 ### NAME: multiple names
 GET http://localhost:8000/name/John and Mari and Jorge C Calientes

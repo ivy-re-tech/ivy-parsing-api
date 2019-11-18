@@ -1,3 +1,4 @@
+import logging
 import string
 from collections import OrderedDict
 from functools import reduce
@@ -6,6 +7,8 @@ from typing import List, Optional, Tuple
 from fastapi import HTTPException
 from probablepeople import parse, tag, RepeatedLabelError
 from pydantic import BaseModel
+
+logger = logging.getLogger("App")
 
 # by no means complete -- we see "Smith Fam Lving Tr st" all the time
 remove_list = ["tr", "trust", "living", "family", "revocable", "rev", "etal"]

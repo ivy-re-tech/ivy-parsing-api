@@ -10,12 +10,12 @@ requests = "*"
 email-validator = "*"
 fastapi = "*"
 gunicorn = "*"
+postal = "*"
 probablepeople = "*"
 pyyaml = "*"
 ujson = "*"
 usaddress = "*"
 uvicorn = "*"
-postal = "*"
 
 [requires]
 python_version = "3.7"
