@@ -17,6 +17,10 @@ spec:
           image: us.gcr.io/ivy-re-data/ivy-parser:$VERSION
           ports:
             - containerPort: 8000
+          resources:
+            requests:
+              cpu: "2m"
+              memory: "4Gi"
 ---
 apiVersion: v1
 kind: Service
