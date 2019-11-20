@@ -21,4 +21,4 @@ RUN pip install --upgrade pip && pip install pipenv && pipenv install
 COPY . /code/
 
 
-CMD pipenv run gunicorn main:app -w 5 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --preload
+CMD pipenv run gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --preload
