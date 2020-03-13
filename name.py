@@ -46,8 +46,11 @@ class Name(BaseModel):
         self.middle_name = middle_name
         self.last_name = last_name
         self.entity_name = entity_name
-        self.empty = self._empty
         self.arity = self._arity
+
+    @property
+    def empty(self) -> bool:
+        return all(self._evals)
 
     @property
     def _evals(self) -> List[bool]:
@@ -57,10 +60,6 @@ class Name(BaseModel):
             self.middle_name is None,
             self.entity_name is None,
         ]
-
-    @property
-    def _empty(self) -> bool:
-        return all(self._evals)
 
     @property
     def _arity(self) -> int:

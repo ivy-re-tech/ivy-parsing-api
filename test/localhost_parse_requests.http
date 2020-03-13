@@ -11,4 +11,12 @@ GET http://localhost:8000/address/libpostal/123 E Main Vine St NE Apt C Gig Harb
 GET http://localhost:8000/name/John and Mari and Jorge C Calientes
 Accept: application/json
 
+### NAME: single name
+GET http://localhost:8000/name/Jorge C Calientes
+Accept: application/json
+
+### NAME: double name
+GET http://localhost:8000/name/Jose C and Jorge Calientes
+Accept: application/json
+
 ###
